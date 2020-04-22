@@ -1,0 +1,263 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "This sets up the VPC for Workspaces",
+  "Resources": {
+    "workspacesVPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "WorkSpaces VPC"
+          }
+        ]
+      }
+    },
+    "workspacesEIP": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc"
+      }
+    },
+    "workspacesIGW": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "WorkSpaces IGW"
+          }
+        ]
+      }
+    },
+    "AttachGateway": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "workspacesVPC"
+        },
+        "InternetGatewayId": {
+          "Ref": "workspacesIGW"
+        }
+      }
+    },
+    "wsPublicSubNet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "workspacesVPC"
+        },
+        "CidrBlock": "10.0.0.0/24",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "WorkSpaces Public Subnet"
+          }
+        ]
+      }
+    },
+    "wsPrivateSubNet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "workspacesVPC"
+        },
+        "CidrBlock": "10.0.1.0/24",
+        "AvailabilityZone": "us-east-1b",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "WorkSpaces Private Subnet 1"
+          }
+        ]
+      }
+    },
+    "wsPrivateSubNet2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "workspacesVPC"
+        },
+        "CidrBlock": "10.0.2.0/24",
+        "AvailabilityZone": "us-east-1c",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "WorkSpaces Private Subnet 2"
+          }
+        ]
+      }
+    },
+    "public1RouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "workspacesVPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "WorkSpaces Public Route Table"
+          }
+        ]
+      }
+    },
+    "publicRoute1": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "public1RouteTable"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "workspacesIGW"
+        }
+      }
+    },
+    "public1routeTableAssoc": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "wsPublicSubNet"
+        },
+        "RouteTableId": {
+          "Ref": "public1RouteTable"
+        }
+      }
+    },
+    "natGateway": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "workspacesEIP",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "wsPublicSubNet"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "WorkSpaces NAT"
+          }
+        ]
+      }
+    },
+    "natRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "workspacesVPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "WorkSpaces NAT Route Table"
+          }
+        ]
+      }
+    },
+    "natRoute": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "natRouteTable"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "natGateway"
+        }
+      }
+    },
+    "nat1routeTableAssoc": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "wsPrivateSubNet1"
+        },
+        "RouteTableId": {
+          "Ref": "natRouteTable"
+        }
+      }
+    },
+    "nat2routeTableAssoc": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "wsPrivateSubNet2"
+        },
+        "RouteTableId": {
+          "Ref": "natRouteTable"
+        }
+      }
+    },
+    "workspacesDirectory": {
+      "Type": "AWS::DirectoryService::SimpleAD",
+      "Properties": {
+        "Description": "Directory for Workspaces",
+        "Name": "workspaces.example.com",
+        "Password": "aBxRmqeQPN4DM7YD",
+        "Size": "Small",
+        "VpcSettings": {
+          "SubnetIds": [
+            {
+              "Ref": "wsPrivateSubNet1"
+            },
+            {
+              "Ref": "wsPrivateSubNet2"
+            }
+          ],
+          "VpcId": {
+            "Ref": "workspacesVPC"
+          }
+        }
+      }
+    },
+    "workspacesSG": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "WorkspacesWebAccess",
+        "GroupDescription": "This security group allows web client access for workspaces",
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "53",
+            "ToPort": "53",
+            "IpProtocol": "UDP"
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "80",
+            "ToPort": "80",
+            "IpProtocol": "UDP"
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "443",
+            "ToPort": "443",
+            "IpProtocol": "UDP"
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "80",
+            "ToPort": "80",
+            "IpProtocol": "TCP"
+          },
+          {
+            "CidrIp": "0.0.0.0/0",
+            "FromPort": "443",
+            "ToPort": "443",
+            "IpProtocol": "TCP"
+          }
+        ],
+        "VpcId": {
+          "Ref": "workspacesVPC"
+        }
+      }
+    }
+  }
+}
