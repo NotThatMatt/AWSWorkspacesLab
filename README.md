@@ -1,4 +1,4 @@
-# AWSWorkspacesLab
+# AWS Workspaces Lab
 A self-paced lab for setting up AWS Workspaces
   
 ### Setup:
@@ -108,7 +108,7 @@ TODO: [ ] Add initial architecture diagram of what the tempalte creates
   - PuTTY should now be gone from WAM and the Windows start menu
 
 ### Clean Up:
-- In order to be able to remove the directory that was set up with the CloudFormation script, you need to disconnect WorkSpaces and WorkSpaces Appliction Manager for the directory
+- In order to be able to remove the directory that was set up with the CloudFormation script you need to disconnect WorkSpaces and WorkSpaces Appliction Manager for the directory
 - In the AWS console navigate to *WorkSpaces*
 - In the navigation pane under *Application Manager* select *Usage*
 - On the *Usage* page select the *Users* tab
@@ -125,7 +125,7 @@ TODO: [ ] Add initial architecture diagram of what the tempalte creates
   - **Note:** This action can take up to 5 minutes to complete. 
 - In the navigation pane under *WorkSpaces* select *Directories*
 - Select the workspaces.example.com directory
-- Click on the **Actions** dropdown and select Deregister**
+- Click on the **Actions** dropdown and select **Deregister**
 - On the warning message click **Deregister**
   - The directory should now say No under *Registered*
 - In the AWS console navigate to CloudFormation
