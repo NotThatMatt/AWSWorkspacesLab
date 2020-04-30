@@ -2,7 +2,8 @@
 A self-paced lab for setting up AWS Workspaces
   
 ### Setup:
-- Download [workspaces.cf.json](https://github.com/mjuliana/AWSWorkspacesLab) from GitHub
+- Download [workspaces.cf.json](https://github.com/mjuliana/AWSWorkspacesLab/blob/master/workspaces.cf.json)
+ from GitHub
 - In the AWS console navigate to *CloudFormation*
 - Click **Create Stack**
 - Under *Prepare template* select *Template is ready*
@@ -88,7 +89,7 @@ TODO: [ ] Add initial architecture diagram of what the tempalte creates
 - Click **Confirm and assign**
 - Go back to your WorkSpace via the desktop client
 - Choose the Amazon WAM shortcut on the desktop of your WorkSpace
-  - If there is no Amazon WAM shortcut on the desktop follow these instructions
+  - If there is no Amazon WAM shortcut on the desktop [follow these instructions](https://github.com/mjuliana/AWSWorkspacesLab/blob/master/wam_setup.md)
 - In *WorkSpaces Application Manager* the *MY APPS* section shows the applications that have been assigned to you and are already installed
 - In *WorkSpaces Application Manager* click **Discover** 
 - On PuTTY click the triangle to install
